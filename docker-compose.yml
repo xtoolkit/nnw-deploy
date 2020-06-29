@@ -1,0 +1,52 @@
+version: "3"
+container_name: nnw
+services:
+  nginx:
+    build: ./nginx
+    ports:
+      - "5000:80"
+    depends_on:
+      - nuxt
+      - wp
+    networks:
+      - flat-network
+  nuxt:
+    build: ./nuxt
+    depends_on:
+      - wp
+      - db
+    networks:
+      - flat-network
+    restart: always
+    command: "npm run dev"
+  wp:
+    build: ./wordpress
+    volumes:
+      - ./wordpress/plugins:/app/wordpress/wp-content/plugins
+    depends_on:
+      - db
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+    networks:
+      - flat-network
+  db:
+    image: mysql:5.7
+    volumes:
+      - ./db_data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: somewordpress
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+    networks:
+      - flat-network
+
+networks:
+  flat-network:
+
+volumes:
+  db_data:
